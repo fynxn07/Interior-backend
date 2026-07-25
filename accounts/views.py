@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import AdminLoginSerializer, UserSerializer
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 
 class AdminLoginView(APIView):
