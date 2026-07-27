@@ -7,7 +7,7 @@ class ProjectGalleryImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectGalleryImage
-        fields = ["id", "url", "type", "order"]
+        fields = ["id", "url", "order"]
 
     def get_url(self, obj):
         return obj.image.url if obj.image else None
@@ -43,10 +43,60 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         return obj.cover_image.url if obj.cover_image else None
 
 
+
 class ProjectWriteSerializer(serializers.ModelSerializer):
+    gallery_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
+
     class Meta:
         model = Project
         fields = [
-            "title", "client", "location", "category",
-            "duration", "status", "featured", "cover_image",
+            "title",
+            "client",
+            "location",
+            "category",
+            "duration",
+            "status",
+            "featured",
+            "cover_image",
+            "gallery_images",
         ]
+
+    def create(self, validated_data):
+        gallery_images = validated_data.pop("gallery_images", [])
+
+        project = Project.objects.create(**validated_data)
+
+        for index, image in enumerate(gallery_images):
+            ProjectGalleryImage.objects.create(
+                project=project,
+                image=image,
+                order=index,
+            )
+
+        return project
+
+    def update(self, instance, validated_data):
+        gallery_images = validated_data.pop("gallery_images", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if gallery_images is not None:
+            instance.gallery.all().delete()
+
+            for index, image in enumerate(gallery_images):
+                ProjectGalleryImage.objects.create(
+                    project=instance,
+                    image=image,
+                    order=index,
+                )
+
+        return instance
+
+

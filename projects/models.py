@@ -10,7 +10,7 @@ class Project(models.Model):
     duration = models.CharField(max_length=200, blank=True)
     status = models.CharField(max_length=100, blank=True)
     featured = models.BooleanField(default=False, db_index=True)
-    cover_image = CloudinaryField("image", blank=True, null=True)
+    cover_image = CloudinaryField("project_cover", blank=True, null=True)
 
     is_deleted = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -24,16 +24,9 @@ class Project(models.Model):
 
 
 class ProjectGalleryImage(models.Model):
-    TYPE_CHOICES = [
-        ("standard", "Standard"),
-        ("before", "Before"),
-        ("after", "After"),
-        ("render", "Render"),
-    ]
 
     project = models.ForeignKey(Project, related_name="gallery", on_delete=models.CASCADE)
-    image = CloudinaryField("image")
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="standard")
+    image = CloudinaryField("project_gallery")
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,4 +34,4 @@ class ProjectGalleryImage(models.Model):
         ordering = ["order", "created_at"]
 
     def __str__(self):
-        return f"{self.project.title} — {self.type}"
+        return f"{self.project.title} - Image {self.order}"
